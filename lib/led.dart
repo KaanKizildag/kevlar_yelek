@@ -5,6 +5,7 @@ import 'package:background_sms/background_sms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:mm_app/gps_service.dart';
 import 'package:mm_app/validator/phone_validator_mixin.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -25,6 +26,7 @@ class _Message {
 }
 
 class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
+  String butonMesaji = 'Aranacak numarayı güncelle';
   static final clientID = 0;
   BluetoothConnection connection;
 
@@ -37,7 +39,6 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
 
   bool isConnecting = true;
   bool get isConnected => connection != null && connection.isConnected;
-  // Bu numaranın uygulama içinden gelmesini istiyoruz.
   String arananNumara = "+905071619352";
 
   bool isDisconnecting = false;
@@ -81,10 +82,8 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
     // Avoid memory leak (`setState` after dispose) and disconnect
     if (isConnected) {
       isDisconnecting = true;
-      connection.dispose();
       connection = null;
     }
-
     super.dispose();
   }
 
@@ -125,7 +124,7 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            numaraGuncelle(_formKey),
+            numaraGuncellemeAlani(_formKey),
             Flexible(
               child: ListView(
                   padding: const EdgeInsets.all(12.0),
@@ -168,31 +167,32 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
     );
   }
 
-  Container numaraGuncelle(GlobalKey<FormState> _formKey) {
+  Container numaraGuncellemeAlani(GlobalKey<FormState> _formKey) {
     return Container(
-              padding: const EdgeInsets.all(5),
-              margin: const EdgeInsets.only(right: 15, left: 15),
-              width: double.infinity,
-              child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        validator: validatePhone,
-                        onSaved: (value) {
-                          arananNumara = value;
-                        },
-                      ),
-                      FlatButton(
-                        child: Text('Aranacak numarayı güncelle'),
-                        onPressed: (){
-                          if(_formKey.currentState.validate()){
-                            _formKey.currentState.save();
-                          }
-                        },
-                      )
-                    ],
-                  )));
+        padding: const EdgeInsets.all(5),
+        margin: const EdgeInsets.only(right: 15, left: 15),
+        width: double.infinity,
+        child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  validator: validatePhone,
+                  onSaved: (value) {
+                    arananNumara = value;
+                  },
+                ),
+                FlatButton(
+                  child: Text(butonMesaji),
+                  onPressed: () {
+                    if (_formKey.currentState.validate()) {
+                      _formKey.currentState.save();
+                    }
+                  },
+                  color: Colors.amberAccent,
+                )
+              ],
+            )));
   }
 
   void _onDataReceived(Uint8List data) {
@@ -236,8 +236,8 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
         );
         _messageBuffer = dataString.substring(index);
 
-        String data = messages[messages.length - 1].text;
-        mesajGeldi(data);
+        String mesajMetni = messages[messages.length - 1].text;
+        mesajGeldiginde(mesajMetni);
       });
     } else {
       _messageBuffer = (backspacesCounter > 0
@@ -273,17 +273,17 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
     }
   }
 
-  void mesajGeldi(String data) {
-    if (data.contains("Mesaj gonder")) {
+  void mesajGeldiginde(String mesajMetni) {
+    if (mesajMetni.contains("Mesaj gonder")) {
       mesajGonder();
       aramaYap();
     }
   }
 
   void mesajGonder() async {
+    var pos = await GpsService().getPosition(); 
     if (await _isPermissionGranted()) {
-      sendMessage(arananNumara, "Acil Durum", simSlot: 1);
-      print("Gönderilen Mesaj:ACİL DURUM");
+      sendMessage(arananNumara, "Acil Durum\n$pos", simSlot: 1);
     } else
       _getPermission();
   }
@@ -308,4 +308,5 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
       print("Failed");
     }
   }
+
 }

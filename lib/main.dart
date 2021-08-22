@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:mm_app/connection.dart';
+import 'package:mm_app/gps_service.dart';
 import 'package:mm_app/led.dart';
 
 void main() {
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class Home extends StatelessWidget {
