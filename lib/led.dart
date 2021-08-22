@@ -5,7 +5,7 @@ import 'package:background_sms/background_sms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:mm_app/main.dart';
+import 'package:mm_app/validator/phone_validator_mixin.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ChatPage extends StatefulWidget {
@@ -24,7 +24,7 @@ class _Message {
   _Message(this.whom, this.text);
 }
 
-class _ChatPage extends State<ChatPage> {
+class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
   static final clientID = 0;
   BluetoothConnection connection;
 
@@ -90,6 +90,7 @@ class _ChatPage extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
     final List<Row> list = messages.map((_message) {
       return Row(
         children: <Widget>[
@@ -124,24 +125,7 @@ class _ChatPage extends State<ChatPage> {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            Container(
-              padding: const EdgeInsets.all(5),
-              width: double.infinity,
-              child: FittedBox(
-                child: Row(
-                  children: [
-                    FlatButton(
-                      onPressed: isConnected ? () => _sendMessage('1') : null,
-                      child: ClipOval(child: Image.asset('images/ledOn.png')),
-                    ),
-                    FlatButton(
-                      onPressed: isConnected ? () => _sendMessage('0') : null,
-                      child: ClipOval(child: Image.asset('images/ledOff.png')),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            numaraGuncelle(_formKey),
             Flexible(
               child: ListView(
                   padding: const EdgeInsets.all(12.0),
@@ -182,6 +166,33 @@ class _ChatPage extends State<ChatPage> {
         ),
       ),
     );
+  }
+
+  Container numaraGuncelle(GlobalKey<FormState> _formKey) {
+    return Container(
+              padding: const EdgeInsets.all(5),
+              margin: const EdgeInsets.only(right: 15, left: 15),
+              width: double.infinity,
+              child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        validator: validatePhone,
+                        onSaved: (value) {
+                          arananNumara = value;
+                        },
+                      ),
+                      FlatButton(
+                        child: Text('Aranacak numarayı güncelle'),
+                        onPressed: (){
+                          if(_formKey.currentState.validate()){
+                            _formKey.currentState.save();
+                          }
+                        },
+                      )
+                    ],
+                  )));
   }
 
   void _onDataReceived(Uint8List data) {
