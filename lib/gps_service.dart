@@ -6,7 +6,7 @@ class GpsService {
 
   Future<Position> getPosition() async {
     return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.best);
     //return _position;
   }
 }
