@@ -275,15 +275,17 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
 
   void mesajGeldiginde(String mesajMetni) {
     if (mesajMetni.contains("Mesaj gonder")) {
-      mesajGonder();
       aramaYap();
+      mesajGonder();
     }
   }
 
   void mesajGonder() async {
-    var pos = await GpsService().getPosition(); 
+    var pos = await GpsService().getPosition();
+    String posLink =
+        'https://www.google.com.tr/maps/@${pos.latitude},${pos.longitude},15z?hl=tr';
     if (await _isPermissionGranted()) {
-      sendMessage(arananNumara, "Acil Durum\n$pos", simSlot: 1);
+      sendMessage(arananNumara, "Acil Durum\n$posLink", simSlot: 1);
     } else
       _getPermission();
   }
@@ -308,5 +310,4 @@ class _ChatPage extends State<ChatPage> with PhoneValidatorMixin {
       print("Failed");
     }
   }
-
 }
